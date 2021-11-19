@@ -38,4 +38,82 @@ We will be using 2 Libraries in this sample coding. [InfluxDBClient by Tobias](h
 #define INFLUXDB_BUCKET "bucket"
 // InfluxDB v1 database name 
 //#define INFLUXDB_DB_NAME "database"
+
+/ InfluxDB client instance
+InfluxDBClient client(INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN);
+// InfluxDB client instance for InfluxDB 1
+//InfluxDBClient client(INFLUXDB_URL, INFLUXDB_DB_NAME);
+
+// Data point
+Point sensor("wifi_status");
 ```
+Or you can just copy the setup from `influxDB Ui -> Data -> Sources -> Arduino`
+
+```ino
+void setup() {
+  Serial.begin(115200);
+  // Connect WiFi
+  Serial.println("Connecting to WiFi");
+  WiFi.mode(WIFI_STA);
+  wifiMulti.addAP(WIFI_SSID, WIFI_PASSWORD);
+  while (wifiMulti.run() != WL_CONNECTED) {
+    Serial.print(".");
+    delay(500);
+  }
+  Serial.println();
+
+  sensor.addTag("device", DEVICE);
+  sensor.addTag("SSID", WiFi.SSID());
+
+  // Check server connection
+  if (client.validateConnection()) {
+    Serial.print("Connected to InfluxDB: ");
+    Serial.println(client.getServerUrl());
+  } else {
+    Serial.print("InfluxDB connection failed: ");
+    Serial.println(client.getLastErrorMessage());
+  }
+}
+```
+The ESP will try to connect to the influxDB server.
+
+```ino
+void loop() {
+  byte temperature = 0;
+  byte humidity = 0;
+  
+  int err = SimpleDHTErrSuccess;
+  
+  if ((err = dht11.read(&temperature, &humidity, NULL)) != SimpleDHTErrSuccess)
+
+  Serial.print("Sample OK: ");
+  Serial.print((int)temperature); Serial.println(" *C, "); 
+  Serial.print((int)humidity); Serial.println(" H");
+
+  sensor.clearFields();
+  sensor.addField("rssi", WiFi.RSSI());
+  sensor.addField("Temperature", (int)temperature);
+  sensor.addField("Humidity", (int)humidity);
+  
+  Serial.println("Writing: ");
+  Serial.println(client.pointToLineProtocol(sensor));
+  // If no Wifi signal, try to reconnect it
+  if (wifiMulti.run() != WL_CONNECTED) {
+    Serial.println("Wifi connection lost");
+  }
+  // Write point
+  if (!client.writePoint(sensor)) {
+    Serial.print("InfluxDB write failed: ");
+    Serial.println(client.getLastErrorMessage());
+  }
+
+  //Wait 2s
+  Serial.println("Wait 2s");
+  delay(2000);
+}
+```
+By using `sensor.addField` we will sent the temperature and humidity to the influxdb server
+
+For more information:
+- [Write data to InfluxDB](https://docs.influxdata.com/influxdb/v2.1/write-data/)
+- [Process Data with InfluxDB tasks](https://docs.influxdata.com/influxdb/v2.1/process-data/)
