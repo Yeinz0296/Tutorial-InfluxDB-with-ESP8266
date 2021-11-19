@@ -23,4 +23,12 @@ cd \Program Files\InfluxData & influx
 ## Set up InfluxDB through the UI
 1. By default the TCP Port is `8086`
 2. The InfluxDB can be access by accessing `localhost:8086` or `http://Your_Local_IPADRRESS:8086`
-3.  
+
+## Set up your initial user
+1. Enter a Username for your initial user.
+2. Enter a Password and Confirm Password for your user.
+3. Enter your initial Organization Name.
+4. Enter your initial Bucket Name.
+5. Click Continue.
+
+InfluxDB is now initialized with a primary user, organization, and bucket. You are ready to write or collect data
