@@ -14,7 +14,11 @@ Use Powershell or WSL to execute `influx` and `influxd` commands. The command li
 2. Extract the zip file into C:\Program Files\InfluxData
 3. Open CMD and input the command
 ```cmd
-cd \Program Files\InfluxData & influx
+cd \Program Files\InfluxData & influxd.exe
+```
+or
+```cmd
+influxd.exe
 ```
 4. When run for the first time, Windows Defender will appear with the following message:
 > Windows Defender Firewall has blocked some features of this app.
